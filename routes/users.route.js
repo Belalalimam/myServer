@@ -29,7 +29,7 @@ router.route("/login").post(UsersController.login);
 
 router.route("/addUser").post(upload.single('avatar'), UsersController.addUser);
 
-router.post('/like/:productId', verifyToken, UsersController.toggleLikeProduct);
+router.post('/like/:userId/:productId', verifyToken, UsersController.toggleLikeProduct);
 
 router.get('/liked-products', verifyToken, UsersController.getLikedProducts);
 
