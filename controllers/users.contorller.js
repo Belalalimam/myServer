@@ -147,6 +147,42 @@ const login = asyncWrapper(async (req, res, next) => {
   console.log("🚀 ~ login ~ token:", token)
 });
 
+
+const toggleLikeProduct = asyncWrapper(async (req, res, next) => {
+  const userId = req.currentUser.id;
+  const productId = req.params.productId;
+  
+  const user = await Users.findById(userId);
+  
+  const isProductLiked = user.likedProducts.includes(productId);
+  
+  if (isProductLiked) {
+    user.likedProducts = user.likedProducts.filter(id => id.toString() !== productId);
+  } else {
+    user.likedProducts.push(productId);
+  }
+  
+  await user.save();
+  
+  res.json({ 
+    status: httpStatusText.SUCCESS, 
+    data: { likedProducts: user.likedProducts } 
+  });
+});
+
+const getLikedProducts = asyncWrapper(async (req, res, next) => {
+  const userId = req.currentUser.id;
+  
+  const user = await Users.findById(userId)
+    .populate('likedProducts');
+    
+  res.json({
+    status: httpStatusText.SUCCESS,
+    data: { likedProducts: user.likedProducts }
+  });
+});
+
+
 module.exports = {
   getUsers,
   getUser,
@@ -154,4 +190,6 @@ module.exports = {
   addUser,
   deleteUser,
   login,
+  getLikedProducts,
+  toggleLikeProduct,
 };

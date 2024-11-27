@@ -23,8 +23,14 @@ router
 
 router.route("/").get( UsersController.getUsers);
 
+router.route("/getUser/:userId").get( UsersController.getUser);
+
 router.route("/login").post(UsersController.login);
 
 router.route("/addUser").post(upload.single('avatar'), UsersController.addUser);
+
+router.post('/like/:productId', verifyToken, UsersController.toggleLikeProduct);
+
+router.get('/liked-products', verifyToken, UsersController.getLikedProducts);
 
 module.exports = router;
