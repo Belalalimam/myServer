@@ -3,7 +3,7 @@ const Users = require("../models/users.moduls");
 const httpStatusText = require("../utils/httpStatusText");
 const asyncWrapper = require("../models/asyncWrapper");
 const appError = require("../utils/appError");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const generateJWT = require("../utils/generateJWT");
 
  

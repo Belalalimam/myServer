@@ -3,7 +3,7 @@ const Products = require("../models/product.moduls");
 const httpStatusText = require("../utils/httpStatusText");
 const asyncWrapper = require("../models/asyncWrapper");
 const appError = require("../utils/appError");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const generateJWT = require("../utils/generateJWT");
 
 const getProducts = asyncWrapper(async (req, res) => {
