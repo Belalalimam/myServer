@@ -35,7 +35,7 @@ const usersSchema = new mongoose.Schema({
       // default: 'uploads/mypng.jpg'
     },
     likedProducts: [{
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'Products'
     }]
 })
