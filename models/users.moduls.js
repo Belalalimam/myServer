@@ -36,7 +36,7 @@ const usersSchema = new mongoose.Schema({
     },
     likedProducts: [{
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Products'
+      ref: 'Product'
     }]
 })
 
