@@ -193,7 +193,7 @@ const toggleLikeProduct = async (req, res, next) => {
           return next(appError.create('Unauthorized action', 401, httpStatusText.FAIL));
       }
 
-      const user = await User.findById(userId);
+      const user = await Users.findById(userId);
       
       if (!user) {
           return next(appError.create('User not found', 404, httpStatusText.FAIL));
