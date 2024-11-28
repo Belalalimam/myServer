@@ -148,27 +148,42 @@ const login = asyncWrapper(async (req, res, next) => {
 });
 
 
-const toggleLikeProduct = asyncWrapper(async (req, res, next) => {
-  const userId = req.currentUser.id;
-  const productId = req.params.productId;
+// const toggleLikeProduct = asyncWrapper(async (req, res, next) => {
+//   const userId = req.currentUser.id;
+//   const productId = req.params.productId;
   
-  const user = await Users.findById(userId);
+//   const user = await Users.findById(userId);
   
-  const isProductLiked = user.likedProducts.includes(productId);
+//   const isProductLiked = user.likedProducts.includes(productId);
   
-  if (isProductLiked) {
-    user.likedProducts = user.likedProducts.filter(id => id.toString() !== productId);
-  } else {
-    user.likedProducts.push(productId);
-  }
+//   if (isProductLiked) {
+//     user.likedProducts = user.likedProducts.filter(id => id.toString() !== productId);
+//   } else {
+//     user.likedProducts.push(productId);
+//   }
   
-  await user.save();
+//   await user.save();
   
-  res.json({ 
-    status: httpStatusText.SUCCESS, 
-    data: { likedProducts: user.likedProducts } 
-  });
-});
+//   res.json({ 
+//     status: httpStatusText.SUCCESS, 
+//     data: { likedProducts: user.likedProducts } 
+//   });
+// });
+
+
+// In your user controller
+const toggleLikeProduct = async (req, res) => {
+  const { userId, productId } = req.params;
+  
+  const updatedUser = await Users.findByIdAndUpdate(
+    userId,
+    { $push: { likedProducts: productId } },
+    { new: true }
+  );
+  
+  res.json({ success: true, data: updatedUser });
+};
+
 
 const getLikedProducts = asyncWrapper(async (req, res, next) => {
   const userId = req.currentUser.id;
