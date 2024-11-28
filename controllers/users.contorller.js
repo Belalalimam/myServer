@@ -172,16 +172,59 @@ const login = asyncWrapper(async (req, res, next) => {
 
 
 // In your user controller
-const toggleLikeProduct = async (req, res) => {
-  const { userId, productId } = req.params;
+// const toggleLikeProduct = async (req, res) => {
+//   const { userId, productId } = req.params;
   
-  const updatedUser = await Users.findByIdAndUpdate(
-    userId,
-    { $push: { likedProducts: productId } },
-    { new: true }
-  );
+//   const updatedUser = await Users.findByIdAndUpdate(
+//     userId,
+//     { $push: { likedProducts: productId } },
+//     { new: true }
+//   );
   
-  res.json({ success: true, data: updatedUser });
+//   res.json({ success: true, data: updatedUser });
+// };
+
+const toggleLikeProduct = async (req, res, next) => {
+  try {
+      const { userId, productId } = req.params;
+      
+      // Verify the authenticated user matches the userId
+      if (req.currentUser.userId !== userId) {
+          return next(appError.create('Unauthorized action', 401, httpStatusText.FAIL));
+      }
+
+      const user = await User.findById(userId);
+      
+      if (!user) {
+          return next(appError.create('User not found', 404, httpStatusText.FAIL));
+      }
+
+      // Initialize likedProducts array if it doesn't exist
+      if (!user.likedProducts) {
+          user.likedProducts = [];
+      }
+
+      // Toggle the like status
+      const productIndex = user.likedProducts.indexOf(productId);
+      if (productIndex === -1) {
+          // Add product to likes
+          user.likedProducts.push(productId);
+      } else {
+          // Remove product from likes
+          user.likedProducts.splice(productIndex, 1);
+      }
+
+      await user.save();
+
+      res.status(200).json({
+          status: httpStatusText.SUCCESS,
+          data: {
+              likedProducts: user.likedProducts
+          }
+      });
+  } catch (error) {
+      next(error);
+  }
 };
 
 
