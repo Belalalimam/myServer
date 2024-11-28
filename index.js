@@ -1,7 +1,6 @@
 const express = require("express");
 const usersRouter = require("./routes/users.route");
 const routerProduct = require("./routes/product.route");
-const cartRoutes = require('./routes/cart.route');
 
 require("dotenv").config();
 const mongoose = require("mongoose");
@@ -20,8 +19,6 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use(express.json());
 
 app.use("/api/users", usersRouter);
-
-app.use("/api/cart", cartRoutes);
 
 app.use("/products", routerProduct);
 
