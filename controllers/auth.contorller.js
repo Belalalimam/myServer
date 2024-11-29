@@ -41,17 +41,9 @@ const registerUserCtrl = asyncWrapper(async (req, res) => {
   });
   await verifictionToken.save();
 
-  const link = `${process.env.CLIENT_DOMAIN}/users/${user._id}/verify/${verifictionToken.token}`;
-
-  // Putting the link into an html template
-  const htmlTemplate = `
-    <div>
-      <p>Click on the link below to verify your email</p>
-      <a href="${link}">Verify</a>
-    </div>`;
-
   res.status(201).json({
     message: "We sent to you an email, please verify your email address",
+    data: {user},
   });
 });
 
@@ -110,10 +102,10 @@ const loginUserCtrl = asyncWrapper(async (req, res) => {
 
   const token = user.generateAuthToken();
   res.status(200).json({
-    _id: user._id,  
+    _id: user._id,
     isAdmin: user.isAdmin,
     token,
-    name: user.name
+    name: user.name,
   });
 });
 
