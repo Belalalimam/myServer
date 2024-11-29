@@ -66,7 +66,7 @@ const Users = mongoose.model("Users", UserSchema);
 // Validate Register User
 function validateRegisterUser(obj) {
   const schema = Joi.object({
-    username: Joi.string().trim().min(2).max(100).required(),
+    name: Joi.string().trim().min(2).max(100).required(),
     email: Joi.string().trim().min(5).max(100).required().email(),
     password: passwordComplexity().required(),
   });
