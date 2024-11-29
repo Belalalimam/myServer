@@ -1,253 +1,173 @@
-const { validationResult } = require("express-validator");
-const Users = require("../models/users.moduls");
-const httpStatusText = require("../utils/httpStatusText");
 const asyncWrapper = require("../models/asyncWrapper");
-const appError = require("../utils/appError");
+const { Users, validateUpdateUser } = require("../models/users.moduls");
 const bcrypt = require("bcryptjs");
-const generateJWT = require("../utils/generateJWT");
+const path = require("path");
+const fs = require("fs");
+const {
+  cloudinaryUploadImage,
+  cloudinaryRemoveImage,
+  cloudinaryRemoveMultipleImage
+} = require("../utils/cloudinary");
+
 
  
-
-const getUsers = asyncWrapper(async (req, res) => {
-
-  console.log("🚀 ~ verifyTokn ~ token:", req.headers)
-  const query = req.query;
-
-  const limit = query.limit || 10;
-  const page = query.page || 1;
-  const skip = (page - 1) * limit;
-
-  console.log("🚀 ~ getUsers ~ query:", query);
-  const users = await Users.find({}, { __v: false, password: false })
-    .limit(limit)
-    .skip(skip);
-  res.json({ status: httpStatusText.SUCCESS, data: { users } });
-  console.log("🚀 ~ app.get ~ allUsers:");
+/**-----------------------------------------------
+ * @desc    Get All Users Profile
+ * @route   /api/users/
+ * @method  GET
+ * @access  private (only admin) 
+ ------------------------------------------------*/
+ const getUsers = asyncWrapper(async (req, res) => {
+  const users = await Users.find().select("-password")
+  res.status(200).json(users);
 });
 
-const getUser = asyncWrapper(async (req, res, next) => {
-  const user = await Users.findById(req.params.userId);
+/**-----------------------------------------------
+ * @desc    Get User Profile
+ * @route   /api/users/getUser/:id
+ * @method  GET
+ * @access  public
+ ------------------------------------------------*/
+ const getUser = asyncWrapper(async (req, res) => {
+  const user = await Users.findById(req.params.id)
+   .select("-password")
+
   if (!user) {
-    const error = appError.create(
-      "the user not found",
-      404,
-      httpStatusText.FAIL
-    );
-    return next(error);
+    return res.status(404).json({ message: "user not found" });
   }
-  return res.json({ status: httpStatusText.SUCCESS, data: { user } });
+
+  res.status(200).json(user);
 });
 
-const editUser = asyncWrapper(async (req, res, next) => {
-  const userId = req.params.userId;
-  const err = validationResult(req);
-
-  const updatedUser = await Users.updateOne(
-    { _id: userId },
-    { $set: { ...req.body } }
-  );
-  if (!err.isEmpty()) {
-    const error = appError.create(err.array(), 400, httpStatusText.FAIL);
-    return next(error);
+/**-----------------------------------------------
+ * @desc    Update User Profile
+ * @route   /api/users/editUser/:id
+ * @method  PUT
+ * @access  private (only user himself)
+ ------------------------------------------------*/
+const editUser = asyncWrapper(async (req, res) => {
+  const { error } = validateUpdateUser(req.body);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
   }
-  res
-    .status(200)
-    .json({ status: httpStatusText.SUCCESS, data: { updatedUser } });
+
+  if (req.body.password) {
+    const salt = await bcrypt.genSalt(10);
+    req.body.password = await bcrypt.hash(req.body.password, salt);
+  }
+
+  const updatedUser = await Users.findByIdAndUpdate(
+    req.params.id,
+    {
+      $set: {
+        name: req.body.name,
+        password: req.body.password,
+      },
+    },
+    { new: true }
+  )//.select("-password")
+
+  res.status(200).json(updatedUser);
 });
 
-const addUser = asyncWrapper(async (req, res, next) => {
-  console.log("Request body:", req.body);
-  const { name, age, email, password, role, avatar } = req.body;
-
-  const oldUser = await Users.findOne({ email: email });
-
-  if (oldUser) {
-    const error = appError.create(
-      "email already exist",
-      400,
-      httpStatusText.FAIL 
-    );
-
-    return next(error);
-  }
-
-  const hashedPassword = await bcrypt.hashSync(password, 10);
-
-  const newUser = new Users({
-    name,
-    age, 
-    email,
-    role,
-    avatar: req.file ? req.file.filename : "uploads/mypng.jpg",
-    password: hashedPassword,
-  });
-
-
-    const token = await generateJWT({email: newUser.email, id: newUser._id, role: newUser.role})
-
-    newUser.token = token
-
-  await newUser.save();
-
-
-  res.status(201).json({ status: httpStatusText.SUCCESS, data: { newUser } });
+/**-----------------------------------------------
+ * @desc    Get Users Count
+ * @route   /api/users/count
+ * @method  GET
+ * @access  private (only admin)
+ ------------------------------------------------*/
+ const getUsersCount = asyncWrapper(async (req, res) => {
+  const count = await Users.countDocuments();
+  res.status(200).json(count);
 });
 
-const deleteUser = asyncWrapper(async (req, res) => {
-  await Users.deleteOne({ _id: req.params.userId });
-  res.json({ status: httpStatusText.SUCCESS, data: null });
-});
-
-const login = asyncWrapper(async (req, res, next) => {
-  const { email, password,  role, name, age } = req.body;
-
-
-  const user = await Users.findOne({ email: email });
-  if (!user) {
-    const error = appError.create(
-      "Invalid email or password",
-      401,
-      httpStatusText.FAIL
-    );
-    return next(error);
+/**-----------------------------------------------
+ * @desc    Profile Photo Upload
+ * @route   /api/users/profile/profile-photo-upload
+ * @method  POST
+ * @access  private (only logged in user)
+ ------------------------------------------------*/
+ const profilePhotoUploadCtrl = asyncWrapper(async (req, res) => {
+  // 1. Validation
+  if (!req.file) {
+    return res.status(400).json({ message: "no file provided" });
   }
-  const isValidPassword = await bcrypt.compare(password, user.password);
-  if (!isValidPassword) {
-    const error = appError.create(
-      "Invalid email or password",
-      401,
-      httpStatusText.FAIL
-    );
-    return next(error);
-  }
-  const token = await generateJWT({
-    email: user.email, 
-    id: user._id,  
-    role: user.role
-  });
 
-  user.token = token;
+  // 2. Get the path to the image
+  const imagePath = path.join(__dirname, `../images/${req.file.filename}`);
+
+  // 3. Upload to cloudinary
+  const result = await cloudinaryUploadImage(imagePath);
+
+  // 4. Get the user from DB
+  const user = await User.findById(req.user.id);
+
+  // 5. Delete the old profile photo if exist
+  if (user.profilePhoto?.publicId !== null) {
+    await cloudinaryRemoveImage(user.profilePhoto.publicId);
+  }
+
+  // 6. Change the profilePhoto field in the DB
+  user.profilePhoto = {
+    url: result.secure_url,
+    publicId: result.public_id,
+  };
   await user.save();
-  
-  res.json({ 
-    status: httpStatusText.SUCCESS, 
-    data: { 
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        avatar: user.avatar,
-        likedProducts: user.likedProducts,
-        token: token
-      } 
-    } 
+
+  // 7. Send response to client
+  res.status(200).json({
+    message: "your profile photo uploaded successfully",
+    profilePhoto: { url: result.secure_url, publicId: result.public_id },
   });
 
-  console.log("🚀 ~ login ~ token:", token)
+  // 8. Remvoe image from the server
+  fs.unlinkSync(imagePath);
 });
 
-
-// const toggleLikeProduct = asyncWrapper(async (req, res, next) => {
-//   const userId = req.currentUser.id;
-//   const productId = req.params.productId;
-  
-//   const user = await Users.findById(userId);
-  
-//   const isProductLiked = user.likedProducts.includes(productId);
-  
-//   if (isProductLiked) {
-//     user.likedProducts = user.likedProducts.filter(id => id.toString() !== productId);
-//   } else {
-//     user.likedProducts.push(productId);
-//   }
-  
-//   await user.save();
-  
-//   res.json({ 
-//     status: httpStatusText.SUCCESS, 
-//     data: { likedProducts: user.likedProducts } 
-//   });
-// });
-
-
-// In your user controller
-// const toggleLikeProduct = async (req, res) => {
-//   const { userId, productId } = req.params;
-  
-//   const updatedUser = await Users.findByIdAndUpdate(
-//     userId,
-//     { $push: { likedProducts: productId } },
-//     { new: true }
-//   );
-  
-//   res.json({ success: true, data: updatedUser });
-// };
-
-const toggleLikeProduct = async (req, res, next) => {
-  try {
-      const { userId, productId } = req.params;
-      
-      // Verify the authenticated user matches the userId
-      if (req.currentUser.userId !== userId) {
-          return next(appError.create('Unauthorized action', 401, httpStatusText.FAIL));
-      }
-
-      const user = await Users.findById(userId);
-      
-      if (!user) {
-          return next(appError.create('User not found', 404, httpStatusText.FAIL));
-      }
-
-      // Initialize likedProducts array if it doesn't exist
-      if (!user.likedProducts) {
-          user.likedProducts = [];
-      }
-
-      // Toggle the like status
-      const productIndex = user.likedProducts.indexOf(productId);
-      if (productIndex === -1) {
-          // Add product to likes
-          user.likedProducts.push(productId);
-      } else {
-          // Remove product from likes
-          user.likedProducts.splice(productIndex, 1);
-      }
-
-      await user.save();
-
-      res.status(200).json({
-          status: httpStatusText.SUCCESS,
-          data: {
-              likedProducts: user.likedProducts
-          }
-      });
-  } catch (error) {
-      next(error);
+/**-----------------------------------------------
+ * @desc    Delete User Profile (Account)
+ * @route   /api/users/deleteUser/:id
+ * @method  DELETE
+ * @access  private (only admin or user himself)
+ ------------------------------------------------*/
+ const deleteUser = asyncWrapper(async (req, res) => {
+  // 1. Get the user from DB
+  const user = await Users.findById(req.params.id);
+  if (!user) {
+    return res.status(404).json({ message: "user not found" });
   }
-};
 
+  // // 2. Get all posts from DB
+  // const posts = await Post.find({ user: user._id });
 
-const getLikedProducts = asyncWrapper(async (req, res, next) => {
-  const userId = req.currentUser.id;
+  // // 3. Get the public ids from the posts
+  // const publicIds = posts?.map((post) => post.image.publicId);
+
+  // // 4. Delete all posts image from cloudinary that belong to this user
+  // if(publicIds?.length > 0) {
+  //   await cloudinaryRemoveMultipleImage(publicIds);
+  // }
+
+  // // 5. Delete the profile picture from cloudinary
+  // if(user.profilePhoto.publicId !== null) {
+  //   await cloudinaryRemoveImage(user.profilePhoto.publicId);
+  // }
   
-  const user = await Users.findById(userId)
-    .populate('likedProducts');
-    
-  res.json({
-    status: httpStatusText.SUCCESS,
-    data: { likedProducts: user.likedProducts }
-  });
-});
+  // // 6. Delete user posts & comments
+  // await Post.deleteMany({ user: user._id });
+  // await Comment.deleteMany({ user: user._id });
 
+  // 7. Delete the user himself
+  await Users.findByIdAndDelete(req.params.id);
+
+  // 8. Send a response to the client
+  res.status(200).json({ message: "your profile has been deleted" });
+});
 
 module.exports = {
   getUsers,
   getUser,
   editUser,
-  addUser,
+  getUsersCount,
   deleteUser,
-  login,
-  getLikedProducts,
-  toggleLikeProduct,
-};
+}

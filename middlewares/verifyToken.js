@@ -1,33 +1,60 @@
 const jwt = require("jsonwebtoken");
-const httpStatusText = require("../utils/httpStatusText");
-const appError = require("../utils/appError");
 
-const verifyToken = (req, res, next) => {
-  
-  const authHeader =
-    req.query["Authorization"] || req.query["authorization"];
-  if (!authHeader) {
-    const error = appError.create(
-      "token is required",
-      401,
-      httpStatusText.FAIL
-    );
-
-    return next(error);
+// Verify Token
+function verifyToken(req, res, next) {
+  const authToken = req.headers.authorization;
+  if (authToken) {
+    const token = authToken.split(" ")[1];
+    try {
+      const decodedPayload = jwt.verify(token, process.env.JWT_SECRET_KEY);
+      req.user = decodedPayload;
+      next();
+    } catch (error) {
+      return res.status(401).json({ message: "invalid token, access denied" });
+    }
+  } else {
+    return res
+      .status(401)
+      .json({ message: "no token provided, access denied" });
   }
+}
 
-  const token = authHeader.split(" ")[1];
+// Verify Token & Admin
+function verifyTokenAndAdmin(req, res, next) {
+  verifyToken(req, res, () => {
+    if (req.user.isAdmin) {
+      next();
+    } else {
+      return res.status(403).json({ message: "not allowed, only admin" });
+    }
+  });
+}
 
-  try {
-    const currentUser = jwt.verify(token, process.env.JWT_SECRET_KEY);
-    req.currentUser =  currentUser;
+// Verify Token & Only User Himself
+function verifyTokenAndOnlyUser(req, res, next) {
+  verifyToken(req, res, () => {
+    if (req.user.id === req.params.id) {
+      next();
+    } else {
+      return res.status(403).json({ message: "not allowed, only user himself" });
+    }
+  });
+}
 
-    console.log("🚀 ~ verifyToken ~ currentUser:", currentUser)
-    next();
-  } catch (err) {
-    const error = appError.create("invalid token", 401, httpStatusText.FAIL);
+// Verify Token & Authorization
+function verifyTokenAndAuthorization(req, res, next) {
+  verifyToken(req, res, () => {
+    if (req.user.id === req.params.id || req.user.isAdmin) {
+      next();
+    } else {
+      return res.status(403).json({ message: "not allowed, only user himself or admin" });
+    }
+  });
+}
 
-    return next(error);
-  }
+module.exports = {
+  verifyToken,
+  verifyTokenAndAdmin,
+  verifyTokenAndOnlyUser,
+  verifyTokenAndAuthorization,
 };
-module.exports = verifyToken;

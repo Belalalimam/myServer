@@ -1,64 +1,29 @@
 const express = require("express");
-const { validationSchema } = require("../middlewares/middlewareSchema");
 const productController = require("../controllers/products.contorller");
-const verifyToken = require("../middlewares/verifyToken");
-const userRoles = require("../utils/usersRoles");
-const allowedTo = require("../middlewares/allowedTo");
-const multer = require('multer');
-const appError = require("../utils/appError");
-
-
-const deskStorge = multer.diskStorage({
-  destination : function(req, file,  cb) {
-    
-    console.log("🚀 ~ file:", file)
-    cb(null, 'uploads')
-  },
-  filename : function(req, file, cb) {
-    const ext = file.mimetype.split('/')[1]
-    const fileName = `user-${Date.now()}.${ext}`
-    cb(null, fileName)
-  }
-
-
-})
-
-const fileFilter= (req, file, cb) =>{
-  const ext = file.mimetype.split('/')[0]
-  if(ext === 'image'){
-    return cb(null, true)
-  }
-  else{ 
-    return cb(appError.create('this type of file is not  allowed', 400), false)
-
-  }
-
-}
-
-const upload = multer({ storage: deskStorge, fileFilter})
-
+const photoUpload = require("../middlewares/photoUpload");
+const { verifyToken } = require("../middlewares/verifyToken");
+const validateObjectId = require("../middlewares/validateObjectId");
 
 const routerProduct = express.Router();
-
-// routerProduct
-//   .route("/:userId")
-//   // .get(productController.getUser)
-//   .put(validationSchema(), productController.editProduct)
-//   .delete(
-//     verifyToken,
-//     allowedTo(userRoles.ADMIN, userRoles.MODERATOR),
-//     productController.deleteProduct
-//   );
-
-// routerProduct.route("/login").post(productController.login);
   
+routerProduct.route("/newProduct").post(verifyToken, photoUpload.single("productImage"), productController.newProduct);
+
 routerProduct.route("/").get(productController.getProducts);
 
-routerProduct.route("/getProduct/:productId").get( productController.getProduct);
+routerProduct.route("/getProduct/:id").get(validateObjectId, productController.getProduct);
 
-routerProduct.route("/addProduct").post(upload.single('productImage') , productController.addProduct);
+routerProduct.route("/deleteProduct/:id").delete(validateObjectId, verifyToken, productController.deleteProduct);
 
-// router.routerProduct("/addUser").post(upload.single('avatar') ,productController.addProduct);
+routerProduct.route("/updateProduct/:id").put(validateObjectId, verifyToken, productController.updateProduct);
+
+routerProduct.route("/upload-image/:id").put(validateObjectId, verifyToken, photoUpload.single("productImage"), productController.updateProductImage);
+
+routerProduct.route("/like/:id").put(validateObjectId, verifyToken, productController.toggleLike);
+
+routerProduct.route("/count").get(productController.getProductsCount);
+
+
+
 
 module.exports = routerProduct;
  
