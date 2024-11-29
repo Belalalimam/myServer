@@ -36,9 +36,14 @@ const usersSchema = new mongoose.Schema({
     },
     likedProducts: [{
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Product'
+      ref: 'Products'
     }]
 })
+usersSchema.virtual("products", {
+  ref: "Products",
+  foreignField: "user",
+  localField: "_id",
+});
 
 module.exports = mongoose.model('Users',  usersSchema)
  

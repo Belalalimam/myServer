@@ -14,7 +14,7 @@ const productSchema = new mongoose.Schema({
   productImage: {
     type: String,
     // require: true,
-    default: '/uploads/hhhhh.jpeg'
+    default: "/uploads/hhhhh.jpeg",
   },
   productCategory: {
     type: String,
@@ -29,6 +29,24 @@ const productSchema = new mongoose.Schema({
   productColor: {
     type: String,
   },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  // image: {
+  //   type: Object,
+  //   default: {
+  //     url: "",
+  //     publicId: null,
+  //   },
+  // },
+  likes: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Users",
+    },
+  ],
 });
 
 module.exports = mongoose.model("Products", productSchema);

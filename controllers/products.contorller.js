@@ -97,37 +97,17 @@ const deleteProduct = asyncWrapper(async (req, res) => {
   res.json({ status: httpStatusText.SUCCESS, data: null });
 });
 
-// const login = asyncWrapper(async (req, res, next) => {
-//   const { email, password, role, name, age } = req.body;
 
-//   const user = await Users.findOne({ email: email });
-//   if (!user) {
-//     const error = appError.create(
-//       "Invalid email or password",
-//       401,
-//       httpStatusText.FAIL
-//     );
-//     return next(error);
-//   }
-//   const isValidPassword = await bcrypt.compare(password, user.password);
-//   if (!isValidPassword) {
-//     const error = appError.create(
-//       "Invalid email or password",
-//       401,
-//       httpStatusText.FAIL
-//     );
-//     return next(error);
-//   }
-//   const token = await generateJWT({
-//     email: user.email,
-//     id: user._id,
-//     role: user.role,
-//   });
 
-//   res.json({ status: httpStatusText.SUCCESS, data: { user } });
 
-//   console.log("🚀 ~ login ~ token:", token);
-// });
+const toggleLikeCtr1 = asyncWrapper(async (req,res) =>{
+  let product = await Products.findById(req.params.id)
+  if( !product) {
+  return res.status(404).json({ message:"post not product" }
+  }
+})
+
+// const isProductAlreadyLiked = Products.likes.find({user}=> user.toString() == loggedInUser)
 
 module.exports = {
   getProducts,
