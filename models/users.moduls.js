@@ -53,6 +53,12 @@ const UserSchema = new mongoose.Schema(
   }
 );
 
+UserSchema.virtual("likes", {
+  ref: "Products",
+  foreignField: "likes",
+  localField: "_id",
+});
+
 // Populate Posts That Belongs To This User When he/she Get his/her Profile
 UserSchema.methods.generateAuthToken = function () {
   return jwt.sign(

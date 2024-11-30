@@ -30,7 +30,7 @@ const {
  ------------------------------------------------*/
  const getUser = asyncWrapper(async (req, res) => {
   const user = await Users.findById(req.params.id)
-   .select("-password")
+   .select("-password").populate("likes");
 
   if (!user) {
     return res.status(404).json({ message: "user not found" });
