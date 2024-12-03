@@ -24,11 +24,11 @@ const {
 
 /**-----------------------------------------------
  * @desc    Get User Profile
- * @route   /api/users/getUser/:id
+ * @route   /api/users/Profile/:id
  * @method  GET
  * @access  public
  ------------------------------------------------*/
- const getUser = asyncWrapper(async (req, res) => {
+ const Profile = asyncWrapper(async (req, res) => {
   const user = await Users.findById(req.params.id)
    .select("-password").populate("likes");
 
@@ -166,7 +166,7 @@ const editUser = asyncWrapper(async (req, res) => {
 
 module.exports = {
   getUsers,
-  getUser,
+  Profile,
   editUser,
   getUsersCount,
   deleteUser,

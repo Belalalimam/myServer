@@ -13,7 +13,7 @@ const router = express.Router();
 
 router.route("/").get(verifyTokenAndAdmin, UsersController.getUsers);
 
-router.route("/getUser/:id").get(validateObjectId, UsersController.getUser);
+router.route("/Profile/:id").get(validateObjectId, UsersController.Profile);
 
 router.route("/editUser/:id").put(validateObjectId, verifyTokenAndOnlyUser, UsersController.editUser);
 
