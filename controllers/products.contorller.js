@@ -199,7 +199,9 @@ const {
       .sort({ createdAt: -1 })
       .populate("user", ["-password"]);
   }
-  res.status(200).json(Product);
+  res.status(200).json(Product
+    
+  );
 });
 
 /**-----------------------------------------------

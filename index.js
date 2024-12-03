@@ -2,6 +2,7 @@ const express = require("express");
 const usersRouter = require("./routes/users.route");
 const routerProduct = require("./routes/product.route");
 const routerAuth = require("./routes/auth.route");
+const routeCategories = require("./routes/categoriseRoute")
 
 require("dotenv").config();
 const mongoose = require("mongoose");
@@ -23,6 +24,7 @@ app.use(express.json());
 app.use("/api/auth", routerAuth);
 app.use("/api/users", usersRouter);
 app.use("/products", routerProduct);
+app.use("/api/categories", routeCategories);
 
 app.all("*", (req, res) => {
   return res
