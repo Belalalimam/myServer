@@ -180,7 +180,7 @@ const {
  * @access  public
  ------------------------------------------------*/
  const getProducts = asyncWrapper(async (req, res) => {
-  const POST_PER_PAGE = 3;
+  const POST_PER_PAGE = 10;
   const { pageNumber, category } = req.query;
   let Product;
 
@@ -191,7 +191,7 @@ const {
       .sort({ createdAt: -1 })
       .populate("user", ["-password"]);
   } else if (category) {
-    Product = await Products.find({ category })
+    Product = await Products.find({ category }) 
       .sort({ createdAt: -1 })
       .populate("user", ["-password"]);
   } else {
