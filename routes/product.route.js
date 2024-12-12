@@ -1,12 +1,12 @@
 const express = require("express");
 const productController = require("../controllers/products.contorller");
 const photoUpload = require("../middlewares/photoUpload");
-const { verifyToken } = require("../middlewares/verifyToken");
+const { verifyToken, verifyTokenAndAdmin } = require("../middlewares/verifyToken");
 const validateObjectId = require("../middlewares/validateObjectId");
 
 const routerProduct = express.Router();
-  
-routerProduct.route("/newProduct").post(verifyToken, photoUpload.single("productImage"), productController.newProduct);
+   
+routerProduct.route("/newProduct").post(verifyToken, verifyTokenAndAdmin, photoUpload.single("productImage"), productController.newProduct);
 
 routerProduct.route("/").get(productController.getProducts);
 
