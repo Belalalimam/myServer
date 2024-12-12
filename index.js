@@ -3,6 +3,7 @@ const usersRouter = require("./routes/users.route");
 const routerProduct = require("./routes/product.route");
 const routerAuth = require("./routes/auth.route");
 const routeCategories = require("./routes/categoriseRoute")
+const cors = require('cors')
 
 require("dotenv").config();
 const mongoose = require("mongoose");
@@ -15,7 +16,13 @@ const path = require("path");
 mongoose.connect(url).then(() => console.log("connected to database"));
 
 const app = express();
-app.use(require("cors")());
+app.use(
+    cors({
+        origin: '*',
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+    })
+);
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
