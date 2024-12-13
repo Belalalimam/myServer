@@ -69,6 +69,7 @@ function validateUpdateProduct(obj) {
     productName: Joi.string().trim().min(2).max(200),
     productDescription: Joi.string().trim().min(10),
     productCategory: Joi.string().trim(),
+    productImage: Joi.string().trim(),
   });
   return schema.validate(obj);
 }

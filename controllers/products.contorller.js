@@ -60,7 +60,7 @@ const {
  * @access  public
  ------------------------------------------------*/
  const getProducts = asyncWrapper(async (req, res) => {
-  const POST_PER_PAGE = 10;
+  const POST_PER_PAGE = 100;
   const { pageNumber, category } = req.query;
   let Product;
 
@@ -117,7 +117,7 @@ const {
  * @desc    Delete Post
  * @route   /Products/deleteProduct/:id
  * @method  DELETE
- * @access  private (only admin or owner of the post)
+ * @access  private (only admin or owner of the product)
  ------------------------------------------------*/
  const deleteProduct = asyncWrapper(async (req, res) => {
   const product = await Products.findById(req.params.id);
@@ -131,7 +131,7 @@ const {
 
     res.status(200).json({
       message: "post has been deleted successfully",
-      postId: product._id,
+      productId: product._id,
     });
   } else {
     res.status(403).json({ message: "access denied, forbidden" });
@@ -142,7 +142,7 @@ const {
  * @desc    Update Product
  * @route   /Products/updateProduct/:id
  * @method  PUT
- * @access  private (only owner of the post)
+ * @access  private (only owner of the product)
  ------------------------------------------------*/
 const updateProduct = asyncWrapper(async (req, res) => {
   // 1. Validation
@@ -151,21 +151,21 @@ const updateProduct = asyncWrapper(async (req, res) => {
     return res.status(400).json({ message: error.details[0].message });
   }
 
-  // 2. Get the post from DB and check if post exist
+  // 2. Get the product from DB and check if product exist
   const product = await Products.findById(req.params.id);
   if (!product) {
-    return res.status(404).json({ message: "post not found" });
+    return res.status(404).json({ message: "product not found" });
   }
 
-  // 3. check if this post belong to logged in user
+  // 3. check if this product belong to logged in user
   if (req.user.id !== product.user.toString()) {
     return res
       .status(403)
       .json({ message: "access denied, you are not allowed" });
   }
 
-  // 4. Update post
-  const updatedPost = await Products.findByIdAndUpdate(
+  // 4. Update product
+  const updatedProduct = await Products.findByIdAndUpdate(
     req.params.id,
     {
       $set: {
@@ -178,7 +178,7 @@ const updateProduct = asyncWrapper(async (req, res) => {
   ).populate("user", ["-password"])
 
   // 5. Send response to the client
-  res.status(200).json(updatedPost);
+  res.status(200).json(updatedProduct);
 });
 
 

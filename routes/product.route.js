@@ -14,7 +14,7 @@ routerProduct.route("/getProduct/:id").get(validateObjectId, productController.g
 
 routerProduct.route("/deleteProduct/:id").delete(validateObjectId, verifyToken, productController.deleteProduct);
 
-routerProduct.route("/updateProduct/:id").put(validateObjectId, verifyToken, productController.updateProduct);
+routerProduct.route("/updateProduct/:id").put(validateObjectId, verifyToken, photoUpload.single("productImage"), productController.updateProduct);
 
 routerProduct.route("/upload-image/:id").put(validateObjectId, verifyToken, photoUpload.single("productImage"), productController.updateProductImage);
 
