@@ -59,6 +59,12 @@ UserSchema.virtual("likes", {
   localField: "_id",
 });
 
+UserSchema.virtual("cart", {
+  ref: "Products",
+  foreignField: "cart",
+  localField: "_id",
+});
+
 // Populate Posts That Belongs To This User When he/she Get his/her Profile
 UserSchema.methods.generateAuthToken = function () {
   return jwt.sign(

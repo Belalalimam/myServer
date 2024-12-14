@@ -30,7 +30,7 @@ const {
  ------------------------------------------------*/
  const Profile = asyncWrapper(async (req, res) => {
   const user = await Users.findById(req.params.id)
-   .select("-password").populate("likes");
+   .select("-password").populate("likes").populate("cart")
 
   if (!user) {
     return res.status(404).json({ message: "user not found" });

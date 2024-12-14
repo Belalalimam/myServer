@@ -275,6 +275,45 @@ const toggleLike = asyncWrapper(async (req, res) => {
 
   res.status(200).json(product);
 });
+/**-----------------------------------------------
+ * @desc    Add to Cart
+ * @route   /Products/Cart/:id
+ * @method  PUT
+ * @access  private (only logged in user)
+ ------------------------------------------------*/
+const AddToCart = asyncWrapper(async (req, res) => {
+  const loggedInUser = req.user.id;
+  const { id: productId } = req.params;
+
+  let product = await Products.findById(productId);
+  if (!product) {
+    return res.status(404).json({ message: "post not found" });
+  }
+
+  const isPostAlreadyAdd = product.cart.find(
+    (user) => user.toString() === loggedInUser
+  );
+
+  if (isPostAlreadyAdd) {
+    product = await Products.findByIdAndUpdate(
+      productId,
+      {
+        $pull: { cart: loggedInUser },
+      },
+      { new: true }
+    );
+  } else {
+    product = await Products.findByIdAndUpdate(
+      productId,
+      {
+        $push: { cart: loggedInUser },
+      },
+      { new: true }
+    );
+  }
+
+  res.status(200).json(product);
+});
 
 
 module.exports = {
@@ -285,6 +324,6 @@ module.exports = {
   deleteProduct,
   updateProduct,
   updateProductImage,
-  toggleLike
-  
+  toggleLike,
+  AddToCart  
 };

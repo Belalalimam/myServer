@@ -18,6 +18,8 @@ routerProduct.route("/updateProduct/:id").put(validateObjectId, verifyToken, pho
 
 routerProduct.route("/upload-image/:id").put(validateObjectId, verifyToken, photoUpload.single("productImage"), productController.updateProductImage);
 
+routerProduct.route("/Cart/:id").put(validateObjectId, verifyToken, productController.AddToCart);
+
 routerProduct.route("/like/:id").put(validateObjectId, verifyToken, productController.toggleLike);
 
 routerProduct.route("/count").get(productController.getProductsCount);
