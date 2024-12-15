@@ -39,6 +39,8 @@ const {
     productName: req.body.productName,
     productDescription: req.body.productDescription,
     productCategory: req.body.productCategory,
+    productCategorySize: req.body.productCategorySize,
+    productColor: req.body.productColor,
     user: req.user.id,
     productImage: {
       url: result.secure_url,
@@ -60,8 +62,8 @@ const {
  * @access  public
  ------------------------------------------------*/
  const getProducts = asyncWrapper(async (req, res) => {
-  const POST_PER_PAGE = 100;
-  const { pageNumber, category } = req.query;
+  const POST_PER_PAGE = 10;
+  const { pageNumber, productCategory } = req.query;
   let Product;
 
   if (pageNumber) {
@@ -70,8 +72,8 @@ const {
       .limit(POST_PER_PAGE)
       .sort({ createdAt: -1 })
       .populate("user", ["-password"]);
-  } else if (category) {
-    Product = await Products.find({ category }) 
+  } else if (productCategory) {
+    Product = await Products.find({ productCategory }) 
       .sort({ createdAt: -1 })
       .populate("user", ["-password"]);
   } else {
@@ -122,7 +124,7 @@ const {
  const deleteProduct = asyncWrapper(async (req, res) => {
   const product = await Products.findById(req.params.id);
   if (!product) {
-    return res.status(404).json({ message: "post not found" });
+    return res.status(404).json({ message: "product not found" });
   }
 
   if (req.user.isAdmin || req.user.id === product.user.toString()) {
@@ -130,7 +132,7 @@ const {
     await cloudinaryRemoveImage(product.productImage.publicId);
 
     res.status(200).json({
-      message: "post has been deleted successfully",
+      message: "product has been deleted successfully",
       productId: product._id,
     });
   } else {
@@ -172,6 +174,8 @@ const updateProduct = asyncWrapper(async (req, res) => {
         productName: req.body.productName,
         productDescription: req.body.productDescription,
         productCategory: req.body.productCategory,
+        productCategorySize: req.body.productCategorySize,
+        productColor: req.body.productColor,
       },
     },
     { new: true }
@@ -248,7 +252,7 @@ const toggleLike = asyncWrapper(async (req, res) => {
 
   let product = await Products.findById(productId);
   if (!product) {
-    return res.status(404).json({ message: "post not found" });
+    return res.status(404).json({ message: "product not found" });
   }
 
   const isPostAlreadyLiked = product.likes.find(

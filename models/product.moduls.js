@@ -42,12 +42,6 @@ const ProductSchema = new mongoose.Schema(
         ref: "Users",
       },
     ],
-    cart: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Users",
-      },
-    ],
   },
   {
     timestamps: true,
@@ -59,22 +53,26 @@ const ProductSchema = new mongoose.Schema(
 // Post Model
 const Products = mongoose.model("Products", ProductSchema);
 
-
 function validateCreateProduct(obj) {
   const schema = Joi.object({
     productName: Joi.string().trim().min(2).max(200).required(),
     productDescription: Joi.string().trim().min(10).required(),
     productCategory: Joi.string().trim().required(),
+    productCategorySize: Joi.string().trim().required(),
+    productColor: Joi.string().trim().required(),
   });
   return schema.validate(obj);
 }
 
+// Validate Update Post
 // Validate Update Post
 function validateUpdateProduct(obj) {
   const schema = Joi.object({
     productName: Joi.string().trim().min(2).max(200),
     productDescription: Joi.string().trim().min(10),
     productCategory: Joi.string().trim(),
+    productCategorySize: Joi.string().trim().required(),
+    productColor: Joi.string().trim().required(),
     productImage: Joi.string().trim(),
   });
   return schema.validate(obj);

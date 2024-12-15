@@ -9,33 +9,27 @@ const UserSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      // require: true
-    },
-    age: {
-      type: Number,
-      // require: true
+      required: true,
+      trim: true,
+      minlength: 2,
+      maxlength: 100,
     },
     email: {
       type: String,
-      require: true,
+      required: true,
+      trim: true,
+      minlength: 5,
+      maxlength: 100,
       unique: true,
-      validate: [validator.isEmail, "lease enter a valid email"],
     },
     password: {
       type: String,
-      require: true,
+      required: true,
+      trim: true,
+      minlength: 8,
     },
     token: {
       type: String,
-    },
-    role: {
-      type: String,
-      enum: [userRoles.ADMIN, userRoles.USER, userRoles.MODERATOR],
-      default: userRoles.USER,
-    },
-    avatar: {
-      type: String,
-      // default: 'uploads/mypng.jpg'
     },
     isAdmin: {
       type: Boolean,
@@ -56,12 +50,6 @@ const UserSchema = new mongoose.Schema(
 UserSchema.virtual("likes", {
   ref: "Products",
   foreignField: "likes",
-  localField: "_id",
-});
-
-UserSchema.virtual("cart", {
-  ref: "Products",
-  foreignField: "cart",
   localField: "_id",
 });
 

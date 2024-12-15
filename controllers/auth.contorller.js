@@ -6,6 +6,7 @@ const {
   validateLoginUser,
 } = require("../models/users.moduls");
 const VerificationToken = require("../models/VerificationToken");
+const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
 
 /**-----------------------------------------------
@@ -29,21 +30,22 @@ const registerUserCtrl = asyncWrapper(async (req, res) => {
   const hashedPassword = await bcrypt.hash(req.body.password, salt);
 
   user = new Users({
-    name: req.body.name,
+    username: req.body.username,
     email: req.body.email,
     password: hashedPassword,
   });
   await user.save();
 
+  // Creating new VerificationToken & save it toDB
   const verifictionToken = new VerificationToken({
     userId: user._id,
     token: crypto.randomBytes(32).toString("hex"),
   });
   await verifictionToken.save();
 
-  const link = `${process.env.CLIENT_DOMAIN}/users/${user._id}/verify/${verifictionToken.token}`;
+  // Making the link
+  const link = `http://localhost:5173/users/${user._id}/verify/${verifictionToken.token}`;
 
-  console.log("🚀 ~ registerUserCtrl ~ link:", link)
   // Putting the link into an html template
   const htmlTemplate = `
     <div>
@@ -51,6 +53,10 @@ const registerUserCtrl = asyncWrapper(async (req, res) => {
       <a href="${link}">Verify</a>
     </div>`;
 
+  // Sending email to the user
+  await sendEmail(user.email, "Verify Your Email", htmlTemplate);
+
+  // Response to the client
   res.status(201).json({
     message: "We sent to you an email, please verify your email address",
   });
@@ -81,40 +87,41 @@ const loginUserCtrl = asyncWrapper(async (req, res) => {
     return res.status(400).json({ message: "invalid email or password" });
   }
 
-  // if (!user.isAccountVerified) {
-  //   let verificationToken = await VerificationToken.findOne({
-  //     userId: user._id,
-  //   });
+  if (!user.isAccountVerified) {
+    let verificationToken = await VerificationToken.findOne({
+      userId: user._id,
+    });
 
-  //   if (!verificationToken) {
-  //     verificationToken = new VerificationToken({
-  //       userId: user._id,
-  //       token: crypto.randomBytes(32).toString("hex"),
-  //     });
-  //     await verificationToken.save();
-  //   }
+    if (!verificationToken) {
+      verificationToken = new VerificationToken({
+        userId: user._id,
+        token: crypto.randomBytes(32).toString("hex"),
+      });
+      await verificationToken.save();
+    }
 
-  //   const link = `${process.env.CLIENT_DOMAIN}/users/${user._id}/verify/${verificationToken.token}`;
+    const link = `http://localhost:5173/users/${user._id}/verify/${verificationToken.token}`;
 
-  //   const htmlTemplate = `
-  //   <div>
-  //     <p>Click on the link below to verify your email</p>
-  //     <a href="${link}">Verify</a>
-  //   </div>`;
+    const htmlTemplate = `
+    <div>
+      <p>Click on the link below to verify your email</p>
+      <a href="${link}">Verify</a>
+    </div>`;
 
-  //   await sendEmail(user.email, "Verify Your Email", htmlTemplate);
+    await sendEmail(user.email, "Verify Your Email", htmlTemplate);
 
-  //   return res.status(400).json({
-  //     message: "We sent to you an email, please verify your email address",
-  //   });
-  // }
+    return res.status(400).json({
+      message: "We sent to you an email, please verify your email address",
+    });
+  }
 
   const token = user.generateAuthToken();
   res.status(200).json({
-    _id: user._id,  
+    _id: user._id,
     isAdmin: user.isAdmin,
+    profilePhoto: user.profilePhoto,
     token,
-    name: user.name
+    username: user.username,
   });
 });
 
@@ -142,7 +149,7 @@ const verifyUserAccountCtrl = asyncWrapper(async (req, res) => {
   user.isAccountVerified = true;
   await user.save();
 
-  await verificationToken.remove();
+  await VerificationToken.deleteOne({ _id: verificationToken._id });
 
   res.status(200).json({ message: "Your account verified" });
 });

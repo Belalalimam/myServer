@@ -3,6 +3,7 @@ const usersRouter = require("./routes/users.route");
 const routerProduct = require("./routes/product.route");
 const routerAuth = require("./routes/auth.route");
 const routeCategories = require("./routes/categoriseRoute")
+const routeCart = require("./routes/cart.router")
 const cors = require("cors");
 
 require("dotenv").config();
@@ -29,6 +30,7 @@ app.use("/api/auth", routerAuth);
 app.use("/api/users", usersRouter);
 app.use("/products", routerProduct);
 app.use("/api/categories", routeCategories);
+app.use('/api/cart', routeCart);
 
 app.all("*", (req, res) => {
   return res
