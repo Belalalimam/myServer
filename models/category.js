@@ -13,6 +13,13 @@ const CategorySchema = new mongoose.Schema({
         required: true,
         trim: true,
     },
+    categoryImage: {
+        type: Object,
+      default: {
+        url: "",
+        publicId: null,
+      },
+    }
 }, {
     timestamps: true,
 });

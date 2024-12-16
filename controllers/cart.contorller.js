@@ -1,4 +1,4 @@
-const { Cart, cartValidation } = require("../models/cart.modal");
+const { Carts, addToCartValidate, updateCartValidate } = require("../models/cart.modal");
 const asyncWrapper = require("../models/asyncWrapper");
 
 // إضافة منتج للسلة
@@ -6,32 +6,32 @@ const addToCart = asyncWrapper(async (req, res) => {
   try {
     console.log("Auth header:", req.headers.authorization);
     console.log("User data:", req.user);
-    const { error } = cartValidation.addToCart.validate(req.body);
+    const { error } = addToCartValidate({...req.body, productId: req.params.productId});
     if (error)
       return res.status(400).json({ message: error.details[0].message });
 
-    let cart = await Cart.findOne({ userId: req.user.id });
+    let cart = await Carts.findOne({ userId: req.user.id });
 
     if (!cart) {
-      cart = new Cart({
+      cart = new Carts({
         userId: req.user.id,
         items: [
           {
-            productId: req.body.productId,
+            productId: req.params.productId,
             quantity: req.body.quantity,
           },
         ],
       });
     } else {
       const itemIndex = cart.items.findIndex(
-        (item) => item.productId.toString() === req.body.productId
+        (item) => item.productId.toString() === req.params.productId
       );
 
       if (itemIndex > -1) {
         cart.items[itemIndex].quantity += req.body.quantity;
       } else {
         cart.items.push({
-          productId: req.body.productId,
+          productId: req.params.productId,
           quantity: req.body.quantity,
         });
       }
@@ -46,11 +46,10 @@ const addToCart = asyncWrapper(async (req, res) => {
 
 // الحصول على سلة المستخدم
 const getCart = asyncWrapper(async (req, res) => {
+  console.log(req.user.id)
   try {
-    const cart = await Cart.findOne({ userId: req.user._id }).populate(
-      "items.productId"
-    );
-    res.status(200).json(cart || { items: [], totalAmount: 0 });
+    const cart = await Carts.findOne({ userId: req.user.id })
+    res.status(200).json(cart);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -59,11 +58,11 @@ const getCart = asyncWrapper(async (req, res) => {
 // تحديث كمية منتج في السلة
 const updateCartItem = asyncWrapper(async (req, res) => {
   try {
-    const { error } = cartValidation.updateCart.validate(req.body);
+    const { error } = updateCartValidate(req.body);
     if (error)
       return res.status(400).json({ message: error.details[0].message });
 
-    const cart = await Cart.findOne({ userId: req.user._id });
+    const cart = await Carts.findOne({ userId: req.user.id });
     if (!cart) return res.status(404).json({ message: "Cart not found" });
 
     const itemIndex = cart.items.findIndex(
@@ -84,7 +83,7 @@ const updateCartItem = asyncWrapper(async (req, res) => {
 // حذف منتج من السلة
 const removeFromCart = asyncWrapper(async (req, res) => {
   try {
-    const cart = await Cart.findOne({ userId: req.user._id });
+    const cart = await Carts.findOne({ userId: req.user.id });
     if (!cart) return res.status(404).json({ message: "Cart not found" });
 
     cart.items = cart.items.filter(
