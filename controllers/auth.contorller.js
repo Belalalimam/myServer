@@ -30,7 +30,7 @@ const registerUserCtrl = asyncWrapper(async (req, res) => {
   const hashedPassword = await bcrypt.hash(req.body.password, salt);
 
   user = new Users({
-    username: req.body.username,
+    name: req.body.name,
     email: req.body.email,
     password: hashedPassword,
   });
@@ -121,7 +121,7 @@ const loginUserCtrl = asyncWrapper(async (req, res) => {
     isAdmin: user.isAdmin,
     profilePhoto: user.profilePhoto,
     token,
-    username: user.username,
+    name: user.name,
   });
 });
 

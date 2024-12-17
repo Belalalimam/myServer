@@ -63,7 +63,7 @@ const {
  ------------------------------------------------*/
  const getProducts = asyncWrapper(async (req, res) => {
   const POST_PER_PAGE = 10;
-  const { pageNumber, productCategory } = req.query;
+  const { pageNumber, productCategory, productCategorySize } = req.query;
   let Product;
 
   if (pageNumber) {
@@ -74,6 +74,10 @@ const {
       .populate("user", ["-password"]);
   } else if (productCategory) {
     Product = await Products.find({ productCategory }) 
+      .sort({ createdAt: -1 })
+      .populate("user", ["-password"]);
+  } else if (productCategorySize) {
+    Product = await Products.find({ productCategorySize }) 
       .sort({ createdAt: -1 })
       .populate("user", ["-password"]);
   } else {

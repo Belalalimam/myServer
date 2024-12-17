@@ -4,8 +4,6 @@ const asyncWrapper = require("../models/asyncWrapper");
 // إضافة منتج للسلة
 const addToCart = asyncWrapper(async (req, res) => {
   try {
-    console.log("Auth header:", req.headers.authorization);
-    console.log("User data:", req.user);
     const { error } = addToCartValidate({...req.body, productId: req.params.productId});
     if (error)
       return res.status(400).json({ message: error.details[0].message });
@@ -46,7 +44,6 @@ const addToCart = asyncWrapper(async (req, res) => {
 
 // الحصول على سلة المستخدم
 const getCart = asyncWrapper(async (req, res) => {
-  console.log(req.user.id)
   try {
     const cart = await Carts.findOne({ userId: req.user.id })
     res.status(200).json(cart);
