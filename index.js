@@ -14,6 +14,8 @@ const httpStatusText = require("./utils/httpStatusText");
 const url = process.env.MONGO_URL;
 const path = require("path");
 
+
+
 mongoose.connect(url).then(() => console.log("connected to database"));
 
 const app = express();
