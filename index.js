@@ -19,7 +19,7 @@ mongoose.connect(url).then(() => console.log("connected to database"));
 const app = express();
 
 app.use(cors({
-  origin: "https://royal-tex.surge.sh/" 
+  origin: "https://royal-tex.surge.sh" 
 }));
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
