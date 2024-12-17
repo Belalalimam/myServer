@@ -50,6 +50,12 @@ app.use((error, req, res, next) => {
   });
 });
 
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'https://royal-tex.surge.sh');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  next();
+});
+
 app.listen(process.env.PORT || 4000, () => {
   console.log("server is running on port 4000");
 });
