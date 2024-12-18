@@ -24,8 +24,8 @@ mongoose.connect(url).then(() => console.log("connected to database"));
 const app = express();
 
 app.use(cors({
-  // origin: "https://royal-tex.surge.sh"
-  origin: "http://localhost:5173"
+  origin: "https://royal-tex.surge.sh"
+  // origin: "http://localhost:5173"
 }));
 
 app.use(xss())
