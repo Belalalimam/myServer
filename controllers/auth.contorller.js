@@ -100,7 +100,7 @@ const loginUserCtrl = asyncWrapper(async (req, res) => {
       await verificationToken.save();
     }
 
-    const link = `https://royal-tex.surge.sh/users/${user._id}/verify/${verifictionToken.token}`;
+    const link = `https://royal-tex.surge.sh/users/${user._id}/verify/${verificationToken.token}`;
 
     const htmlTemplate = `
     <div>
