@@ -44,7 +44,7 @@ const registerUserCtrl = asyncWrapper(async (req, res) => {
   await verifictionToken.save();
 
   // Making the link
-  const link = `http://localhost:5173/users/${user._id}/verify/${verifictionToken.token}`;
+  const link = `https://royal-tex.surge.sh/users/${user._id}/verify/${verifictionToken.token}`;
 
   // Putting the link into an html template
   const htmlTemplate = `
