@@ -5,7 +5,7 @@ const {
   validateRegisterUser,
   validateLoginUser,
 } = require("../models/users.moduls");
-const VerificationToken = require("../models/VerificationToken");
+const verificationtokens = require("../models/VerificationToken");
 const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
 
@@ -37,7 +37,7 @@ const registerUserCtrl = asyncWrapper(async (req, res) => {
   await user.save();
 
   // Creating new VerificationToken & save it toDB
-  const verifictionToken = new VerificationToken({
+  const verifictionToken = new verificationtokens({
     userId: user._id,
     token: crypto.randomBytes(32).toString("hex"),
   });
@@ -88,12 +88,12 @@ const loginUserCtrl = asyncWrapper(async (req, res) => {
   }
 
   if (!user.isAccountVerified) {
-    let verificationToken = await VerificationToken.findOne({
+    let verificationToken = await verificationtokens.findOne({
       userId: user._id,
     });
 
     if (!verificationToken) {
-      verificationToken = new VerificationToken({
+      verificationToken = new verificationtokens({
         userId: user._id,
         token: crypto.randomBytes(32).toString("hex"),
       });
@@ -137,7 +137,7 @@ const verifyUserAccountCtrl = asyncWrapper(async (req, res) => {
     return res.status(400).json({ message: "invalid link" });
   }
 
-  const verificationToken = await VerificationToken.findOne({
+  const verificationToken = await verificationtokens.findOne({
     userId: user._id,
     token: req.params.token,
   });
@@ -149,7 +149,7 @@ const verifyUserAccountCtrl = asyncWrapper(async (req, res) => {
   user.isAccountVerified = true;
   await user.save();
 
-  await VerificationToken.deleteOne({ _id: verificationToken._id });
+  await verificationtokens.deleteOne({ _id: verificationToken._id });
 
   res.status(200).json({ message: "Your account verified" });
 });
