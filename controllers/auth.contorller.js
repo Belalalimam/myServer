@@ -44,7 +44,7 @@ const registerUserCtrl = asyncWrapper(async (req, res) => {
   await verifictionToken.save();
 
   // Making the link
-  const link = `https://royal-tex.surge.sh/users/${user._id}/verify/${verificationToken.token}`;
+  const link = `https://royal-tex.shutterfly-alu.com/users/${user._id}/verify/${verificationToken.token}`;
 
   // Putting the link into an html template
   const htmlTemplate = `
@@ -101,7 +101,7 @@ const loginUserCtrl = asyncWrapper(async (req, res) => {
       await verificationToken.save();
     }
 
-    const link = `https://royal-tex.surge.sh/users/${user._id}/verify/${verificationToken.token}`;
+    const link = `https://royal-tex.shutterfly-alu.com/users/${user._id}/verify/${verificationToken.token}`;
 
     const htmlTemplate = `
     <div>
