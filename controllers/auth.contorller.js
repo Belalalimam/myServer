@@ -36,15 +36,16 @@ const registerUserCtrl = asyncWrapper(async (req, res) => {
   });
   await user.save();
 
-  // Creating new VerificationToken & save it toDB
-  const verifictionToken = new VerificationToken({
-    userId: user._id,
-    token: crypto.randomBytes(32).toString("hex"),
-  });
-  await verifictionToken.save();
+// Creating new VerificationToken & save it toDB
+const verificationToken = new VerificationToken({
+  userId: user._id,
+  token: crypto.randomBytes(32).toString("hex"),
+});
+await verificationToken.save();
 
-  // Making the link
-  const link = `https://royal-tex.shutterfly-alu.com/users/${user._id}/verify/${verificationToken.token}`;
+// Making the link
+const link = `https://royal-tex.shutterfly-alu.com/users/${user._id}/verify/${verificationToken.token}`;
+
 
   // Putting the link into an html template
   const htmlTemplate = `
