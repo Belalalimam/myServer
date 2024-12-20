@@ -121,7 +121,6 @@ const loginUserCtrl = asyncWrapper(async (req, res) => {
   res.status(200).json({
     _id: user._id,
     isAdmin: user.isAdmin,
-    profilePhoto: user.profilePhoto,
     token,
     name: user.name,
   });
