@@ -1,0 +1,27 @@
+{
+  "name": "jsend",
+  "version": "1.1.0",
+  "description": "Utilities and middleware to assist with sending and handling jsend responses.",
+  "keywords": [
+    "jsend",
+    "middleware",
+    "json",
+    "status"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha test/*.test.js",
+    "lint": "jshint ."
+  },
+  "author": "Matt Dunlap <mpdunlap@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:Prestaul/jsend.git"
+  },
+  "devDependencies": {
+    "chai": "^3.0.0",
+    "jshint": "^2.8.0",
+    "mocha": "^2.2.5"
+  }
+}
