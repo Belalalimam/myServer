@@ -68,6 +68,10 @@ app.all("*", (req, res) => {
     .json({ status: httpStatusText.ERROR, message: "Route not found" });
 });
 
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+});
+
 app.use((error, req, res, next) => {
   res.status(error.httpStatusCode || 500).json({
     status: error.statusText || httpStatusText.ERROR,
